@@ -4,20 +4,16 @@
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00000000</color>
     <color name="primaryColor">#6200ED</color>
+    <color name="darkColor">#373737</color>
+    <color name="greyColor">#E0E0E0</color>
 
     <color name="shadowColor">#D51212</color>
-    <color name="keyPreView">#009688</color>
     <color name="keyPreviewBorderColor">#FDD835</color>
     <color name="keyPreviewBGColor">#FB8C00</color>
     <color name="keyPreviewTextColor">#00897B</color>
-    <color name="keyboardBgd">#F3EE8E</color>
-    <color name="kbdNormalKeyBgd">#00FFFFFF</color>
-    <color name="kbdPressedKeyBgd">#1B000000</color>
-    <color name="keyboardBorderColor">#000</color>
-    <color name="keyboardBGColor">#000</color>
     <color name="textFieldBorderColor">#009688</color>
     <color name="feedbackInputBorderColor">#5E35B1</color>
-    <color name="predictItemBorderColor">#3E3E3E</color>
+    <color name="predictViewBGColor">#EDC73D</color>
 
     <color name="predictTextColor">#202020</color>
     <color name="predictNumColor">#0040FF</color>

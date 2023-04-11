@@ -168,7 +168,7 @@ public class GalaxyKeyboardService extends InputMethodService
                         ? gdh.readPrediction(curTempText)
                         : gdh.readFollower(followerText)
         );
-        predictPart.setAdapter(gpa);
+        predictListView.setAdapter(gpa);
         GalaxyPredictAdapter.setOnItemClickListener(new GalaxyPredictAdapter.ClickListener() {
             @Override
             public void onItemClick(int position, View v) {
@@ -286,8 +286,8 @@ public class GalaxyKeyboardService extends InputMethodService
         Log.e("___Swipe Up___", "DONE");
     }
 
-    private RecyclerView predictPart;
-    private EditText textField;
+    private RecyclerView predictListView;
+    private TextView textField;
     private boolean isCreated = false;
 
     // It is called when the keyboard appears
@@ -296,24 +296,16 @@ public class GalaxyKeyboardService extends InputMethodService
         Log.e("___Galaxy Keyboard___", "CREATED");
         isCreated = true;
         View galaxyView = getLayoutInflater().inflate(R.layout.galaxy_keyboard, null);
-        predictPart = galaxyView.findViewById(R.id.predictPart);
+        predictListView = galaxyView.findViewById(R.id.predictListView);
         GalaxyFbLayoutManager layoutManager = new GalaxyFbLayoutManager(context);
         layoutManager.setFlexDirection(FlexDirection.ROW_REVERSE);
         layoutManager.setFlexWrap(FlexWrap.WRAP_REVERSE);
         layoutManager.setJustifyContent(JustifyContent.SPACE_EVENLY);
         layoutManager.setAlignItems(AlignItems.STRETCH);
-        predictPart.setLayoutManager(layoutManager);
+        predictListView.setLayoutManager(layoutManager);
 
         textField = galaxyView.findViewById(R.id.textField);
         kv = galaxyView.findViewById(R.id.keyboardView);
-        closeButton = galaxyView.findViewById(R.id.closeButton);
-        closeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ic.commitText(curTempText, 1);
-                curTempText = "";
-            }
-        });
         keyboard = new Keyboard(this, R.xml.front_keypad);
         kv.setKeyboard(keyboard);
         kv.setOnKeyboardActionListener(this);

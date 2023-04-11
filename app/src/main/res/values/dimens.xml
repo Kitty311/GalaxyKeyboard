@@ -21,4 +21,5 @@
     <dimen name="stroke_big">5dp</dimen>
     <dimen name="popup_keypad_height">56dp</dimen>
     <dimen name="preview_text_height">40dp</dimen>
+    <dimen name="predict_part_height">200dp</dimen>
 </resources>

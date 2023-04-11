@@ -1,46 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:layout_alignParentBottom="true"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <RelativeLayout
-        android:layout_above="@id/textField"
+    <LinearLayout
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/topPart"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/greyColor"
+        android:paddingTop="@dimen/gap_tiny"
+        android:paddingBottom="@dimen/gap_tiny">
+        <ImageButton
+            android:id="@+id/rightButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_right"
+            android:layout_marginStart="@dimen/gap_small"
+            android:layout_marginEnd="@dimen/gap_small"
+            android:background="@drawable/btn_circle"/>
+        <com.galaxy.keyboard.widget.GalaxyEditText
+            android:id="@+id/textField"
+            android:background="@drawable/text_field_bg_black"
+            android:textSize="@dimen/app_text_size_normal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="@dimen/gap_normal"/>
+        <ImageButton
+            android:id="@+id/micButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_mic"
+            android:layout_marginStart="@dimen/gap_small"
+            android:layout_marginEnd="@dimen/gap_small"
+            android:background="@color/transparent"/>
+    </LinearLayout>
+
+    <RelativeLayout
+        app:layout_constraintTop_toBottomOf="@id/topPart"
+        android:id="@+id/middlePart"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/predict_part_height"
+        android:background="@color/predictViewBGColor"
+        android:padding="@dimen/gap_tiny">
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/predictPart"
-            android:background="@color/colorBlack50"
+            android:id="@+id/predictListView"
+            android:background="@drawable/predict_view_bg_black"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="@dimen/predict_part_height"
             app:layoutManager="com.google.android.flexbox.FlexboxLayoutManager"
             app:stackFromEnd="true"
             app:reverseLayout="true"
             app:spanCount="3"
             tools:listitem="@layout/item_prediction"/>
-        <ImageView
-            android:visibility="gone"
-            android:layout_margin="@dimen/gap_normal"
-            android:layout_alignParentEnd="true"
-            android:id="@+id/closeButton"
-            android:src="@drawable/ic_close"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
     </RelativeLayout>
 
-    <com.galaxy.keyboard.widget.GalaxyEditText
-        android:id="@+id/textField"
-        android:background="@drawable/text_field_bg_black"
-        android:textSize="@dimen/app_text_size_normal"
-        android:minLines="2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/keyboardView"
-        android:padding="@dimen/gap_normal"
-        android:layout_margin="@dimen/stroke_normal"/>
     <com.galaxy.keyboard.input.GalaxyKeyboardView
+        app:layout_constraintTop_toBottomOf="@id/middlePart"
         android:id="@+id/keyboardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -48,7 +70,6 @@
         android:background="@drawable/keyboard_panel_bg_black"
         android:keyBackground="@drawable/black_key_bg_selector"
         android:keyPreviewLayout="@layout/key_preview"
-        android:shadowColor="@color/shadowColor"
         android:keyTextSize="@dimen/app_text_size_normal"
         android:keyTextColor="#fff"/>
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
