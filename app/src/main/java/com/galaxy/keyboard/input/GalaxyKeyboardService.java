@@ -83,6 +83,9 @@ public class GalaxyKeyboardService extends InputMethodService
 
     private void finishWriting() {
         ic.commitText(curText, 0);
+        Log.e("Current Text Field Length", curText.length() + "");
+        curText = "";
+        textField.setText(curText);
     }
 
     private Keyboard.Key findKey(Keyboard keyboard, int primaryCode) {
@@ -106,11 +109,14 @@ public class GalaxyKeyboardService extends InputMethodService
                 finishWriting();
                 break;
             case GalaxyConstant.BACKSPACE_KEY_CODE:
-                if (curTempText.length() > 0)
-                curTempText = curTempText.substring(0, curTempText.length() - 1);
+                if (curText.length() > 0)
+                    curText = curText.charAt(curText.length() - 1) + "";
+                else
+                    ic.deleteSurroundingText(1, 0);
                 break;
             case GalaxyConstant.ENTER_KEY_CODE:
-                curTempText += "\n";
+                finishWriting();
+                ic.commitText("\n", 0);
                 break;
             case GalaxyConstant.SWITCH_NUMBER_PAD_KEY_CODE:
                 keyboard = new Keyboard(this, R.xml.back_keypad);
@@ -140,16 +146,15 @@ public class GalaxyKeyboardService extends InputMethodService
                 break;
             default:
                 char code = (char) i;
-                curTempText += code;
+                curText = textField.getText().toString();
+                curText += code;
         }
 
         doGalaxyOperation();
 
     }
 
-    private String curTempText = ""; // Text which is typed for prediction or follower
-    private int curTempTextPos = 0; // Position which curTempText should be written
-    private String curText = ""; // Text which is written on text field
+    private String curText = ""; // Text which is written on user entry box, also can be used for prediction
     private String followerText = ""; // Text which is used for follower
     private boolean isPredictionMode = true;
 
@@ -159,13 +164,12 @@ public class GalaxyKeyboardService extends InputMethodService
     private void doGalaxyOperation() {
 
         if (isPredictionMode) {
-            curText = curText.substring(0, curTempTextPos);
-            curText += curTempText;
+            textField.setText(curText);
         }
 
         GalaxyPredictAdapter gpa = new GalaxyPredictAdapter(
                 isPredictionMode
-                        ? gdh.readPrediction(curTempText)
+                        ? gdh.readPrediction(curText)
                         : gdh.readFollower(followerText)
         );
         predictListView.setAdapter(gpa);
@@ -173,14 +177,12 @@ public class GalaxyKeyboardService extends InputMethodService
             @Override
             public void onItemClick(int position, View v) {
                 String selText = ((TextView)v.findViewById(R.id.wordText)).getText().toString();
-                curText = curText.substring(0, curTempTextPos);
-                curText += selText;
-                curTempText = "";
-                curTempTextPos = curText.length();
                 if (!isPredictionMode)
-                    followerText = selText;
-                doGalaxyOperation();
+                    followerText = selText.charAt(selText.length() - 1) + "";
+                curText = selText;
                 isPredictionMode = false;
+                doGalaxyOperation();
+                finishWriting();
             }
 
             @Override
@@ -188,7 +190,6 @@ public class GalaxyKeyboardService extends InputMethodService
 
             }
         });
-        textField.setText(curText);
     }
 
     // This is adapter that shows prediction words

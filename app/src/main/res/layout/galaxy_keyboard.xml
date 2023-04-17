@@ -7,8 +7,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
-        app:layout_constraintTop_toTopOf="parent"
-        android:id="@+id/topPart"
+        app:layout_constraintTop_toBottomOf="@id/topPart"
+        android:id="@+id/middlePart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -43,8 +43,8 @@
     </LinearLayout>
 
     <RelativeLayout
-        app:layout_constraintTop_toBottomOf="@id/topPart"
-        android:id="@+id/middlePart"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/topPart"
         android:layout_width="match_parent"
         android:layout_height="@dimen/predict_part_height"
         android:background="@color/predictViewBGColor"
