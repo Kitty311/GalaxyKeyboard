@@ -1,6 +1,8 @@
 package com.galaxy.keyboard.input;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
@@ -35,11 +37,12 @@ public class GalaxyKeyboardService extends InputMethodService
         implements KeyboardView.OnKeyboardActionListener {
 
     private GalaxyKeyboardView kv;
-    private View closeButton;
     private Keyboard keyboard;
 
+    private InputConnection ic;
+
     private static Context context;
-    private GalaxyDatabaseHelper gdh;
+    private static GalaxyDatabaseHelper gdh;
 
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
@@ -69,8 +72,6 @@ public class GalaxyKeyboardService extends InputMethodService
         gdh = new GalaxyDatabaseHelper(context);
     }
 
-    private boolean isCaps = false;
-
     @Override
     public void onPress(int i) {
         Log.e("___Pressed Key___", String.valueOf(i));
@@ -79,13 +80,6 @@ public class GalaxyKeyboardService extends InputMethodService
     @Override
     public void onRelease(int i) {
         Log.e("___Released Key___", String.valueOf(i));
-    }
-
-    private void finishWriting() {
-        ic.commitText(curText, 0);
-        Log.e("Current Text Field Length", curText.length() + "");
-        curText = "";
-        textField.setText(curText);
     }
 
     private Keyboard.Key findKey(Keyboard keyboard, int primaryCode) {
@@ -97,6 +91,8 @@ public class GalaxyKeyboardService extends InputMethodService
         return null;
     }
 
+    private boolean isUserTextMode = false;
+
     @Override
     public void onKey(int i, int[] ints) {
 
@@ -106,17 +102,65 @@ public class GalaxyKeyboardService extends InputMethodService
         ic = getCurrentInputConnection();
         switch (i) {
             case GalaxyConstant.FINISH_KEY_CODE:
-                finishWriting();
+                Keyboard.Key kk = findKey(keyboard, i);
+                if (isUserTextMode) {
+                    kk.icon = getDrawable(R.drawable.a10);
+                    userTextBox.setVisibility(View.GONE);
+                    isUserTextMode = false;
+                    if (userTextBox.getText().toString().isEmpty()) return;
+                    PhraseModel item = new PhraseModel();
+                    item.setMInput(userTextBox.getText().toString());
+                    item.setMPredict(userTextBox.getText().toString());
+                    item.setMIsUserText(1);
+                    gdh.insertPrediction(item);
+                    curText = "";
+                    curUserText = "";
+                    userTextBox.setText(curUserText);
+                    userEntryBox.setText(curText);
+                    predictListView.setAdapter(null);
+                } else {
+                    kk.icon = getDrawable(R.drawable.a10_);
+                    userTextBox.setVisibility(View.VISIBLE);
+                    curText = "";
+                    curUserText = "";
+                    userTextBox.setText(curUserText);
+                    userEntryBox.setText(curText);
+                    predictListView.setAdapter(null);
+                    isUserTextMode = true;
+                }
                 break;
             case GalaxyConstant.BACKSPACE_KEY_CODE:
-                if (curText.length() > 0)
-                    curText = curText.charAt(curText.length() - 1) + "";
-                else
+                if (isUserTextMode) {
+                    if (curUserText.length() > 0)
+                        curUserText = curUserText.substring(0, curUserText.length() - 1);
+                }
+                if (curText.length() > 0) {
+                    curText = curText.substring(0, curText.length() - 1);
+                }
+                else if (!isUserTextMode)
                     ic.deleteSurroundingText(1, 0);
+                doGalaxyOperation();
                 break;
             case GalaxyConstant.ENTER_KEY_CODE:
-                finishWriting();
-                ic.commitText("\n", 0);
+                if (isUserTextMode) {
+                    curUserText += "\n";
+                    curText = "";
+                    userEntryBox.setText(curText);
+                } else {
+                    submitInUnicode();
+                    ic.commitText("\n", 0);
+                }
+                doGalaxyOperation();
+                break;
+            case GalaxyConstant.SPACE_KEY_CODE:
+                if (isUserTextMode) {
+                    curUserText += " ";
+                    curText = "";
+                    userEntryBox.setText(curText);
+                } else {
+                    ic.commitText(" ", 0);
+                }
+                doGalaxyOperation();
                 break;
             case GalaxyConstant.SWITCH_NUMBER_PAD_KEY_CODE:
                 keyboard = new Keyboard(this, R.xml.back_keypad);
@@ -126,8 +170,8 @@ public class GalaxyKeyboardService extends InputMethodService
                 keyboard = new Keyboard(this, R.xml.front_keypad);
                 kv.setKeyboard(keyboard);
                 break;
-            case GalaxyConstant.SEND_FEEDBACK_KEY_CODE:
-                kv.ShowFeedbackDialog();
+            case GalaxyConstant.USER_TEXT_KEY_CODE:
+                doKagayaOperation();
                 break;
             case GalaxyConstant.SWITCH_LANGUAGE_KEY_CODE:
                 GalaxyAppHelper.Companion.SwitchKeyboard(context);
@@ -146,43 +190,76 @@ public class GalaxyKeyboardService extends InputMethodService
                 break;
             default:
                 char code = (char) i;
-                curText = textField.getText().toString();
+                if (isUserTextMode) {
+                    curUserText += code;
+                }
                 curText += code;
+                doGalaxyOperation();
         }
-
-        doGalaxyOperation();
-
     }
 
     private String curText = ""; // Text which is written on user entry box, also can be used for prediction
+    private String curUserText = "";
     private String followerText = ""; // Text which is used for follower
     private boolean isPredictionMode = true;
+    private void submitInUnicode() {
+        String unicodeText = "";
+        for (char s : curText.toCharArray()) {
+            unicodeText += gdh.readUnicodeFromSancode(s + "").getMUnicode();
+        }
+        if (isUserTextMode) {
+            String userEntryBoxString = userEntryBox.getText().toString();
+            curUserText = curUserText.substring(0, curUserText.length() - userEntryBoxString.length());
+            curUserText += unicodeText;
+            userTextBox.setText(curUserText);
+        } else {
+            ic.commitText(unicodeText, 0);
+        }
+        curText = "";
+        userEntryBox.setText(curText);
+    }
 
-    private InputConnection ic;
+    private void submitUserText() {
+        if (isUserTextMode) {
+            curUserText += curText;
+            userTextBox.setText(userTextBox.getText().toString() + curText);
+        } else {
+            ic.commitText(curText, 0);
+        }
+        curText = "";
+        userEntryBox.setText(curText);
+        predictListView.setAdapter(null);
+    }
 
-    // Here goes all the logic which predict words, show text to the our text field and so on
     private void doGalaxyOperation() {
 
         if (isPredictionMode) {
-            textField.setText(curText);
+            userEntryBox.setText(curText);
         }
 
-        GalaxyPredictAdapter gpa = new GalaxyPredictAdapter(
-                isPredictionMode
-                        ? gdh.readPrediction(curText)
-                        : gdh.readFollower(followerText)
-        );
+        if (isUserTextMode) {
+            userTextBox.setText(curUserText);
+        }
+
+        List<PhraseModel> phraseList = isPredictionMode
+                ? gdh.readPrediction(curText, 0)
+                : gdh.readFollower(followerText);
+        GalaxyPredictAdapter gpa = new GalaxyPredictAdapter(phraseList);
         predictListView.setAdapter(gpa);
         GalaxyPredictAdapter.setOnItemClickListener(new GalaxyPredictAdapter.ClickListener() {
             @Override
             public void onItemClick(int position, View v) {
+                PhraseModel item = phraseList.get(position);
+                if (isPredictionMode)
+                    gdh.increasePredictionFrequency(item.getMId());
+                else
+                    gdh.increaseFollowerFrequency(item.getMId());
                 String selText = ((TextView)v.findViewById(R.id.wordText)).getText().toString();
-                if (!isPredictionMode)
-                    followerText = selText.charAt(selText.length() - 1) + "";
+                followerText = selText.charAt(selText.length() - 1) + "";
                 curText = selText;
                 isPredictionMode = false;
                 doGalaxyOperation();
-                finishWriting();
+                submitInUnicode();
             }
 
             @Override
@@ -192,20 +269,42 @@ public class GalaxyKeyboardService extends InputMethodService
         });
     }
 
+    private void doKagayaOperation() {
+
+        List<PhraseModel> phraseList = gdh.readPrediction(curText, 1);
+        GalaxyPredictAdapter gpa = new GalaxyPredictAdapter(phraseList);
+        predictListView.setAdapter(gpa);
+        GalaxyPredictAdapter.setOnItemClickListener(new GalaxyPredictAdapter.ClickListener() {
+            @Override
+            public void onItemClick(int position, View v) {
+                curText = ((TextView)v.findViewById(R.id.wordText)).getText().toString();
+                submitUserText();
+            }
+
+            @Override
+            public void onItemLongClick(int position, View v) {
+//                phraseList.remove(position);
+//                gpa.notifyItemRemoved(position);
+            }
+        });
+    }
+
     // This is adapter that shows prediction words
     public static class GalaxyPredictAdapter extends RecyclerView.Adapter<GalaxyPredictAdapter.GalaxyViewHolder> {
 
         private static ClickListener clickListener;
-        private List<PhraseModel> mList;
+        private static List<PhraseModel> mList;
 
         public GalaxyPredictAdapter(List<PhraseModel> list) {
-            this.mList = list;
+            mList = list;
         }
 
         @NonNull
         @Override
         public GalaxyPredictAdapter.GalaxyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new GalaxyViewHolder(LayoutInflater.from(context).inflate(R.layout.item_prediction, null));
+            View view = LayoutInflater.from(context).inflate(R.layout.item_prediction, null);
+            GalaxyViewHolder viewHolder = new GalaxyViewHolder(view);
+            return viewHolder;
         }
 
         @Override
@@ -227,8 +326,8 @@ public class GalaxyKeyboardService extends InputMethodService
         public static class GalaxyViewHolder extends RecyclerView.ViewHolder
                 implements View.OnClickListener, View.OnLongClickListener {
 
-            private TextView wordText;
-            private TextView numText;
+            private final TextView wordText;
+            private final TextView numText;
             public GalaxyViewHolder(@NonNull View itemView) {
                 super(itemView);
                 itemView.setOnClickListener(this);
@@ -237,6 +336,24 @@ public class GalaxyKeyboardService extends InputMethodService
                 numText = itemView.findViewById(R.id.numText);
                 wordText.setTextSize(GalaxyAppHelper.Companion.GetCurrentAppTextSize(context));
                 numText.setTextSize(GalaxyAppHelper.Companion.GetCurrentAppTextSize(context));
+                wordText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (clickListener != null) {
+                            clickListener.onItemClick(getAdapterPosition(), view);
+                        }
+                    }
+                });
+                wordText.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        if (clickListener != null) {
+                            clickListener.onItemLongClick(getAdapterPosition(), view);
+                            return true;
+                        }
+                        return false;
+                    }
+                });
             }
             public void setWordText(String s) {
                 wordText.setText(s);
@@ -288,25 +405,25 @@ public class GalaxyKeyboardService extends InputMethodService
     }
 
     private RecyclerView predictListView;
-    private TextView textField;
-    private boolean isCreated = false;
+    private TextView userEntryBox, userTextBox;
 
     // It is called when the keyboard appears
     @Override
     public View onCreateInputView() {
         Log.e("___Galaxy Keyboard___", "CREATED");
-        isCreated = true;
         View galaxyView = getLayoutInflater().inflate(R.layout.galaxy_keyboard, null);
         predictListView = galaxyView.findViewById(R.id.predictListView);
         GalaxyFbLayoutManager layoutManager = new GalaxyFbLayoutManager(context);
-        layoutManager.setFlexDirection(FlexDirection.ROW_REVERSE);
+//        layoutManager.setFlexDirection(FlexDirection.ROW_REVERSE);
         layoutManager.setFlexWrap(FlexWrap.WRAP_REVERSE);
         layoutManager.setJustifyContent(JustifyContent.SPACE_EVENLY);
         layoutManager.setAlignItems(AlignItems.STRETCH);
         predictListView.setLayoutManager(layoutManager);
 
-        textField = galaxyView.findViewById(R.id.textField);
+        userEntryBox = galaxyView.findViewById(R.id.userEntryBox);
+        userTextBox = galaxyView.findViewById(R.id.userTextBox);
         kv = galaxyView.findViewById(R.id.keyboardView);
+        kv.setInputConnection(ic);
         keyboard = new Keyboard(this, R.xml.front_keypad);
         kv.setKeyboard(keyboard);
         kv.setOnKeyboardActionListener(this);

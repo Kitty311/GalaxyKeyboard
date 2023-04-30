@@ -18,7 +18,7 @@
             android:layout_gravity="center_horizontal"
             android:gravity="center_horizontal"
             android:textColor="@color/predictTextColor"
-            android:textSize="@dimen/app_text_size_normal"
+            android:textSize="@dimen/app_text_size_big"
             android:text="Galaxy"/>
         <TextView
             android:visibility="gone"

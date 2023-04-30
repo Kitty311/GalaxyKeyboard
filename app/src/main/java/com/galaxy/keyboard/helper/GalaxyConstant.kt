@@ -5,12 +5,13 @@ object GalaxyConstant {
     const val APP_DEVELOPER: String = "Kitty Galaxy"
     const val BACKSPACE_KEY_CODE = -5
     const val ENTER_KEY_CODE = -4
+    const val SPACE_KEY_CODE = 32
     const val FINISH_KEY_CODE = -97
     const val SWITCH_NUMBER_PAD_KEY_CODE = -98
     const val SWITCH_LANGUAGE_KEY_CODE = -99
     const val SWITCH_DATA_PACK_KEY_CODE = -100
     const val SETTING_KEY_CODE = -101
-    const val SEND_FEEDBACK_KEY_CODE = -102
+    const val USER_TEXT_KEY_CODE = -102
     const val SWITCH_CHARACTER_PAD_KEY_CODE = -103
     const val SPECIAL_CHARACTER_KEY_CODE_1 = -311
     const val SPECIAL_CHARACTER_KEY_CODE_2 = -312

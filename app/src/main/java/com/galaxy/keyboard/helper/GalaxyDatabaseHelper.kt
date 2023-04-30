@@ -8,9 +8,8 @@ import android.database.sqlite.SQLiteConstraintException
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
-import android.util.Log
 import com.galaxy.keyboard.model.PhraseModel
-import java.util.ArrayList
+import com.galaxy.keyboard.model.UnicodeModel
 
 class GalaxyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
@@ -38,6 +37,7 @@ class GalaxyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABAS
         val values = ContentValues()
         values.put(PREDICTION_FIELD_INPUT_LETTER, phraseModel.mInput)
         values.put(PREDICTION_FIELD_PREDICT_LETTER, phraseModel.mPredict)
+        values.put(PREDICTION_FIELD_IS_USER_TEXT, phraseModel.mIsUserText)
 
         // Insert the new row, returning the primary key value of the new row
         val newRowId = db.insert(PREDICTION_TABLE_NAME, null, values)
@@ -45,35 +45,70 @@ class GalaxyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABAS
         return newRowId > 0
     }
 
-    fun increasePredictionFrequency(predict: String, frequency: Int) {
-        val db = writableDatabase
-        db.rawQuery("UPDATE " +
-                PREDICTION_TABLE_NAME
-                + " SET " + PREDICTION_FIELD_FREQUENCY + " = " + (frequency + 1)
-                + " WHERE " + PREDICTION_FIELD_PREDICT_LETTER + " = '" + predict + "'", null)
-        Log.e("___Increasing Word___", "UPDATE " +
-                PREDICTION_TABLE_NAME
-                + " SET " + PREDICTION_FIELD_FREQUENCY + " = " + (frequency + 1)
-                + " WHERE " + PREDICTION_FIELD_PREDICT_LETTER + " = '" + predict + "'")
-    }
-
     @Throws(SQLiteConstraintException::class)
-    fun deletePrediction(input: String): Boolean {
+    fun deletePrediction(selId: Int) {
         // Gets the data repository in write mode
         val db = writableDatabase
-        // Define 'where' part of query.
-        val selection = PREDICTION_FIELD_INPUT_LETTER + " LIKE ?"
-        // Specify arguments in placeholder order.
-        val selectionArgs = arrayOf(input)
-        // Issue SQL statement.
-        db.delete(PREDICTION_TABLE_NAME, selection, selectionArgs)
+        db.execSQL("UPDATE " +
+                PREDICTION_TABLE_NAME
+                + " SET " + PREDICTION_FIELD_IS_EXIST + " = 0" + " WHERE " + PREDICTION_FIELD_ID + " = ?", arrayOf(selId)
+        )
+    }
 
-        return true
+    fun increasePredictionFrequency(selId: Int) {
+        val db = writableDatabase
+        db.execSQL("UPDATE " +
+                PREDICTION_TABLE_NAME
+                + " SET " + PREDICTION_FIELD_FREQUENCY + " = " + PREDICTION_FIELD_FREQUENCY + " + " + 1
+                + " WHERE " + PREDICTION_FIELD_ID + " = ?", arrayOf(selId)
+        )
+    }
+
+    fun increaseFollowerFrequency(selId: Int) {
+        val db = writableDatabase
+        db.execSQL("UPDATE " +
+                FOLLOWER_TABLE_NAME
+                + " SET " + FOLLOWER_FIELD_FREQUENCY + " = " + FOLLOWER_FIELD_FREQUENCY + " + " + 1
+                + " WHERE " + FOLLOWER_FIELD_ID + " = ?", arrayOf(selId)
+        )
     }
 
     @SuppressLint("Range")
-    fun readPrediction(input: String): ArrayList<PhraseModel> {
+    fun readUnicodeFromSancode(input: String): UnicodeModel {
         if (input.isEmpty()) {
+            return UnicodeModel(0, input, input)
+        }
+        val db = writableDatabase
+        var cursor: Cursor?
+        try {
+            cursor = db.rawQuery("SELECT * FROM "
+                    + UNICODE_TABLE_NAME + " WHERE "
+                    + UNICODE_FIELD_SANCODE + " = '"
+                    + input + "' AND is_exist = 1 ORDER BY id ASC", null)
+        } catch (e: SQLiteException) {
+            // if table not yet present, create it
+//            db.execSQL(SQL_CREATE_ENTRIES)
+            return UnicodeModel(0, input, input)
+        }
+
+        var unicode = UnicodeModel(0, input, input)
+
+        if (cursor!!.moveToFirst()) {
+            while (!cursor.isAfterLast) {
+                unicode = UnicodeModel(
+                    cursor.getInt(cursor.getColumnIndex(UNICODE_FIELD_ID)),
+                    input,
+                    cursor.getString(cursor.getColumnIndex(UNICODE_FIELD_UNICODE))
+                )
+                cursor.moveToNext()
+            }
+        }
+        return unicode
+    }
+
+    @SuppressLint("Range")
+    fun readPrediction(input: String, isUserText: Int): ArrayList<PhraseModel> {
+        if (input.isEmpty() && isUserText == 0) {
             return ArrayList()
         }
         val predicts = ArrayList<PhraseModel>()
@@ -83,7 +118,7 @@ class GalaxyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABAS
             cursor = db.rawQuery("SELECT * FROM "
                     + PREDICTION_TABLE_NAME + " WHERE "
                     + PREDICTION_FIELD_INPUT_LETTER + " LIKE '"
-                    + input + "%' ORDER BY frequency, id DESC", null)
+                    + input + "%' AND " + PREDICTION_FIELD_IS_USER_TEXT + " = " + isUserText + " AND is_exist = 1 ORDER BY frequency DESC", null)
         } catch (e: SQLiteException) {
             // if table not yet present, create it
 //            db.execSQL(SQL_CREATE_ENTRIES)
@@ -92,9 +127,13 @@ class GalaxyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABAS
 
         if (cursor!!.moveToFirst()) {
             while (!cursor.isAfterLast) {
-                predicts.add(PhraseModel(input,
+                predicts.add(PhraseModel(
+                    cursor.getInt(cursor.getColumnIndex(PREDICTION_FIELD_ID)),
+                    input,
                     cursor.getString(cursor.getColumnIndex(PREDICTION_FIELD_PREDICT_LETTER)),
-                    cursor.getInt(cursor.getColumnIndex(PREDICTION_FIELD_FREQUENCY))))
+                    cursor.getInt(cursor.getColumnIndex(PREDICTION_FIELD_FREQUENCY)),
+                    cursor.getInt(cursor.getColumnIndex(PREDICTION_FIELD_IS_USER_TEXT)))
+                )
                 cursor.moveToNext()
             }
         }
@@ -112,12 +151,8 @@ class GalaxyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABAS
         try {
             cursor = db.rawQuery("SELECT * FROM "
                     + FOLLOWER_TABLE_NAME + " WHERE "
-                    + FOLLOWER_FIELD_KEYWORD + "='"
-                    + input + "' ORDER BY frequency, id DESC", null)
-            Log.e("Prediction ", "SELECT * FROM "
-                    + FOLLOWER_TABLE_NAME + " WHERE "
-                    + FOLLOWER_FIELD_FOLLOW_LETTER + "='"
-                    + input + "' ORDER BY frequency, id DESC")
+                    + FOLLOWER_FIELD_KEYWORD + " = '"
+                    + input + "' AND is_exist = 1 ORDER BY frequency DESC", null)
         } catch (e: SQLiteException) {
             // if table not yet present, create it
 //            db.execSQL(SQL_CREATE_ENTRIES)
@@ -126,38 +161,12 @@ class GalaxyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABAS
 
         if (cursor!!.moveToFirst()) {
             while (!cursor.isAfterLast) {
-                predicts.add(PhraseModel(input,
+                predicts.add(PhraseModel(
+                    cursor.getInt(cursor.getColumnIndex(FOLLOWER_FIELD_ID)),
+                    input,
                     cursor.getString(cursor.getColumnIndex(FOLLOWER_FIELD_FOLLOW_LETTER)),
-                    cursor.getInt(cursor.getColumnIndex(FOLLOWER_FIELD_FREQUENCY))))
-                cursor.moveToNext()
-            }
-        }
-        return predicts
-    }
-
-    @SuppressLint("Range")
-    fun readAllPredictions(): ArrayList<PhraseModel> {
-        val predicts = ArrayList<PhraseModel>()
-        val db = writableDatabase
-        var cursor: Cursor?
-        try {
-            cursor = db.rawQuery("SELECT * FROM " + PREDICTION_TABLE_NAME + " ORDER BY frequency, id DESC", null)
-        } catch (e: SQLiteException) {
-//            db.execSQL(SQL_CREATE_ENTRIES)
-            return ArrayList()
-        }
-
-        var input: String
-        var predict: String
-        var freq: Int
-
-        if (cursor!!.moveToFirst()) {
-            while (!cursor.isAfterLast) {
-                input = cursor.getString(cursor.getColumnIndex(PREDICTION_FIELD_INPUT_LETTER))
-                predict = cursor.getString(cursor.getColumnIndex(PREDICTION_FIELD_PREDICT_LETTER))
-                freq = cursor.getInt(cursor.getColumnIndex(PREDICTION_FIELD_FREQUENCY))
-
-                predicts.add(PhraseModel(input, predict, freq))
+                    cursor.getInt(cursor.getColumnIndex(FOLLOWER_FIELD_FREQUENCY))),
+                )
                 cursor.moveToNext()
             }
         }
@@ -169,11 +178,18 @@ class GalaxyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABAS
         val DATABASE_VERSION = 1
         val DATABASE_NAME = "ayemin.db"
 
+        private val UNICODE_TABLE_NAME: String = "tbl_unicode"
+        private val UNICODE_FIELD_ID: String = "id"
+        private val UNICODE_FIELD_SANCODE: String = "sancode"
+        private val UNICODE_FIELD_UNICODE: String = "unicode"
+
         private val PREDICTION_TABLE_NAME: String = "tbl_prediction"
         private val PREDICTION_FIELD_ID: String = "id"
         private val PREDICTION_FIELD_INPUT_LETTER: String = "input_letter"
         private val PREDICTION_FIELD_PREDICT_LETTER: String = "predict_letter"
         private val PREDICTION_FIELD_FREQUENCY: String = "frequency"
+        private val PREDICTION_FIELD_IS_USER_TEXT: String = "is_user_text"
+        private val PREDICTION_FIELD_IS_EXIST: String = "is_exist"
 
         private val FOLLOWER_TABLE_NAME: String = "tbl_follower"
         private val FOLLOWER_FIELD_ID: String = "id"
