@@ -210,7 +210,7 @@ public class GalaxyKeyboardService extends InputMethodService
         if (isUserTextMode) {
             String userEntryBoxString = userEntryBox.getText().toString();
             curUserText = curUserText.substring(0, curUserText.length() - userEntryBoxString.length());
-            curUserText += unicodeText;
+            curUserText += curText;
             userTextBox.setText(curUserText);
         } else {
             ic.commitText(unicodeText, 0);
@@ -224,7 +224,11 @@ public class GalaxyKeyboardService extends InputMethodService
             curUserText += curText;
             userTextBox.setText(userTextBox.getText().toString() + curText);
         } else {
-            ic.commitText(curText, 0);
+            String unicodeText = "";
+            for (char s : curText.toCharArray()) {
+                unicodeText += gdh.readUnicodeFromSancode(s + "").getMUnicode();
+            }
+            ic.commitText(unicodeText, 0);
         }
         curText = "";
         userEntryBox.setText(curText);

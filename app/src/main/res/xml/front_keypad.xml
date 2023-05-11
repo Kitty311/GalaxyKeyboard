@@ -12,7 +12,7 @@
         <Key android1:codes="4158" android1:keyIcon="@drawable/a04"/>
         <Key android1:codes="4141" android1:keyIcon="@drawable/a05"/>
         <Key android1:codes="4143" android1:keyIcon="@drawable/a06"/>
-        <Key android1:codes="4158" android1:keyIcon="@drawable/a07"/>
+        <Key android1:codes="4146" android1:keyIcon="@drawable/a07"/>
         <Key android1:codes="4140" android1:keyIcon="@drawable/a08"/>
         <Key android1:codes="4154" android1:keyIcon="@drawable/a09"/>
         <Key android1:codes="-97" android1:keyIcon="@drawable/a10" android1:keyEdgeFlags="right"/>
@@ -46,7 +46,7 @@
         <Key android1:codes="4122" android1:keyIcon="@drawable/a32"/>
         <Key android1:codes="4123" android1:keyIcon="@drawable/a33"/>
         <Key android1:codes="4124" android1:keyIcon="@drawable/a34"/>
-        <Key android1:codes="4160" android1:keyIcon="@drawable/a35"/>
+        <Key android1:codes="4125" android1:keyIcon="@drawable/a35"/>
         <Key android1:codes="4126" android1:keyIcon="@drawable/a36"/>
         <Key android1:codes="4127" android1:keyIcon="@drawable/a37"/>
         <Key
