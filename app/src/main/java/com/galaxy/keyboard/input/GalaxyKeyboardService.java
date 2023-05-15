@@ -1,19 +1,15 @@
 package com.galaxy.keyboard.input;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,11 +22,9 @@ import com.galaxy.keyboard.helper.GalaxyDatabaseHelper;
 import com.galaxy.keyboard.model.PhraseModel;
 import com.galaxy.keyboard.helper.GalaxyConstant;
 import com.google.android.flexbox.AlignItems;
-import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.JustifyContent;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GalaxyKeyboardService extends InputMethodService
@@ -40,6 +34,14 @@ public class GalaxyKeyboardService extends InputMethodService
     private Keyboard keyboard;
 
     private InputConnection ic;
+
+    private KEYPAD_MODE curKeypadMode = KEYPAD_MODE.BURMESE_FRONT_KEY_PAD;
+    private enum KEYPAD_MODE {
+        BURMESE_FRONT_KEY_PAD,
+        BURMESE_BACK_KEY_PAD,
+        ENGLISH_FRONT_KEY_PAD,
+        ENGLISH_BACK_KEY_PAD
+    }
 
     private static Context context;
     private static GalaxyDatabaseHelper gdh;
@@ -162,19 +164,40 @@ public class GalaxyKeyboardService extends InputMethodService
                 }
                 doGalaxyOperation();
                 break;
-            case GalaxyConstant.SWITCH_NUMBER_PAD_KEY_CODE:
-                keyboard = new Keyboard(this, R.xml.back_keypad);
+            case GalaxyConstant.SWITCH_BURMESE_BACK_PAD_KEY_CODE:
+                curKeypadMode = KEYPAD_MODE.BURMESE_BACK_KEY_PAD;
+                keyboard = new Keyboard(this, R.xml.bur_back_keypad);
                 kv.setKeyboard(keyboard);
                 break;
-            case GalaxyConstant.SWITCH_CHARACTER_PAD_KEY_CODE:
-                keyboard = new Keyboard(this, R.xml.front_keypad);
+            case GalaxyConstant.SWITCH_BURMESE_FRONT_PAD_KEY_CODE:
+                curKeypadMode = KEYPAD_MODE.BURMESE_FRONT_KEY_PAD;
+                keyboard = new Keyboard(this, R.xml.bur_front_keypad);
+                kv.setKeyboard(keyboard);
+                break;
+            case GalaxyConstant.SWITCH_ENGLISH_BACK_PAD_KEY_CODE:
+                curKeypadMode = KEYPAD_MODE.ENGLISH_BACK_KEY_PAD;
+                keyboard = new Keyboard(this, R.xml.eng_back_keypad);
+                kv.setKeyboard(keyboard);
+                break;
+            case GalaxyConstant.SWITCH_ENGLISH_FRONT_PAD_KEY_CODE:
+                curKeypadMode = KEYPAD_MODE.ENGLISH_FRONT_KEY_PAD;
+                keyboard = new Keyboard(this, R.xml.eng_front_keypad);
+                kv.setKeyboard(keyboard);
+                break;
+            case GalaxyConstant.SWITCH_ENGLISH_PAD_KEY_CODE:
+//                GalaxyAppHelper.Companion.SwitchKeyboard(context);
+                curKeypadMode = KEYPAD_MODE.ENGLISH_FRONT_KEY_PAD;
+                keyboard = new Keyboard(this, R.xml.eng_front_keypad);
+                kv.setKeyboard(keyboard);
+                break;
+            case GalaxyConstant.SWITCH_BURMESE_PAD_KEY_CODE:
+//                GalaxyAppHelper.Companion.SwitchKeyboard(context);
+                curKeypadMode = KEYPAD_MODE.BURMESE_FRONT_KEY_PAD;
+                keyboard = new Keyboard(this, R.xml.bur_front_keypad);
                 kv.setKeyboard(keyboard);
                 break;
             case GalaxyConstant.USER_TEXT_KEY_CODE:
                 doKagayaOperation();
-                break;
-            case GalaxyConstant.SWITCH_LANGUAGE_KEY_CODE:
-                GalaxyAppHelper.Companion.SwitchKeyboard(context);
                 break;
             case GalaxyConstant.SETTING_KEY_CODE:
                 kv.ShowSettingDialog();
@@ -182,9 +205,9 @@ public class GalaxyKeyboardService extends InputMethodService
             case GalaxyConstant.SWITCH_DATA_PACK_KEY_CODE:
                 Keyboard.Key key = findKey(keyboard, i);
                 if (GalaxyAppHelper.Companion.GetCurrentDataPack(context)) {
-                    key.icon = getDrawable(R.drawable.ab43_office);
+                    key.icon = getDrawable(R.drawable.abcd43_office);
                 } else {
-                    key.icon = getDrawable(R.drawable.ab43_standard);
+                    key.icon = getDrawable(R.drawable.abcd43_standard);
                 }
                 GalaxyAppHelper.Companion.SetCurrentDataPack(context, !GalaxyAppHelper.Companion.GetCurrentDataPack(context));
                 break;
@@ -192,14 +215,19 @@ public class GalaxyKeyboardService extends InputMethodService
                 char code = (char) i;
                 if (isUserTextMode) {
                     curUserText += code;
+                } else if (curKeypadMode == KEYPAD_MODE.ENGLISH_BACK_KEY_PAD || curKeypadMode == KEYPAD_MODE.ENGLISH_FRONT_KEY_PAD) {
+                    ic.commitText(code + "", 0);
+                    return;
                 }
                 curText += code;
+                curTextUnicode = i;
                 doGalaxyOperation();
         }
     }
 
     private String curText = ""; // Text which is written on user entry box, also can be used for prediction
-    private String curUserText = "";
+    private String curUserText = ""; // Same as @curText but only works when user memory mode is on
+    private int curTextUnicode = 0; // Unicode of pressed key
     private String followerText = ""; // Text which is used for follower
     private boolean isPredictionMode = true;
     private void submitInUnicode() {
@@ -237,11 +265,13 @@ public class GalaxyKeyboardService extends InputMethodService
 
     private void doGalaxyOperation() {
 
-        if (isPredictionMode) {
+        boolean isSpecialSymbol = curTextUnicode >= 193 && curTextUnicode <= 225;
+
+        if (isPredictionMode && !isSpecialSymbol) {
             userEntryBox.setText(curText);
         }
 
-        if (isUserTextMode) {
+        if (isUserTextMode && !isSpecialSymbol) {
             userTextBox.setText(curUserText);
         }
 
@@ -428,7 +458,7 @@ public class GalaxyKeyboardService extends InputMethodService
         userTextBox = galaxyView.findViewById(R.id.userTextBox);
         kv = galaxyView.findViewById(R.id.keyboardView);
         kv.setInputConnection(ic);
-        keyboard = new Keyboard(this, R.xml.front_keypad);
+        keyboard = new Keyboard(this, R.xml.bur_front_keypad);
         kv.setKeyboard(keyboard);
         kv.setOnKeyboardActionListener(this);
         return galaxyView;
