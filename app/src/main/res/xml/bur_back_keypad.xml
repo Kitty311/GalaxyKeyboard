@@ -80,7 +80,7 @@
             android1:keyIcon="@drawable/abcd46"/>
         <Key android1:codes="224" android1:keyIcon="@drawable/b47"/>
         <Key android1:codes="223" android1:keyIcon="@drawable/b48"/>
-        <Key android1:codes="225" android1:keyIcon="@drawable/b49"/>
+        <Key android1:codes="222" android1:keyIcon="@drawable/b49"/>
         <Key
             android1:codes="-4"
             android1:keyEdgeFlags="right"

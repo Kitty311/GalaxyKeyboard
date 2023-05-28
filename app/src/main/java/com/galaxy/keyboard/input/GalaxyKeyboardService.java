@@ -213,14 +213,23 @@ public class GalaxyKeyboardService extends InputMethodService
                 break;
             default:
                 char code = (char) i;
+                curTextUnicode = i;
+
+                boolean isSpecialSymbol = curTextUnicode >= 193 && curTextUnicode <= 225;
+                if (isSpecialSymbol) {
+                    doKittyOperation(code + "");
+                    return;
+                }
+
+                boolean isBurmeseNumber = curTextUnicode >= 4160 && curTextUnicode <= 4169;
+
                 if (isUserTextMode) {
                     curUserText += code;
-                } else if (curKeypadMode == KEYPAD_MODE.ENGLISH_BACK_KEY_PAD || curKeypadMode == KEYPAD_MODE.ENGLISH_FRONT_KEY_PAD) {
+                } else if (curKeypadMode == KEYPAD_MODE.ENGLISH_BACK_KEY_PAD || curKeypadMode == KEYPAD_MODE.ENGLISH_FRONT_KEY_PAD || isBurmeseNumber) {
                     ic.commitText(code + "", 0);
                     return;
                 }
                 curText += code;
-                curTextUnicode = i;
                 doGalaxyOperation();
         }
     }
@@ -265,13 +274,11 @@ public class GalaxyKeyboardService extends InputMethodService
 
     private void doGalaxyOperation() {
 
-        boolean isSpecialSymbol = curTextUnicode >= 193 && curTextUnicode <= 225;
-
-        if (isPredictionMode && !isSpecialSymbol) {
+        if (isPredictionMode) {
             userEntryBox.setText(curText);
         }
 
-        if (isUserTextMode && !isSpecialSymbol) {
+        if (isUserTextMode) {
             userTextBox.setText(curUserText);
         }
 
@@ -319,6 +326,36 @@ public class GalaxyKeyboardService extends InputMethodService
             public void onItemLongClick(int position, View v) {
 //                phraseList.remove(position);
 //                gpa.notifyItemRemoved(position);
+            }
+        });
+    }
+
+    private void doKittyOperation(String symbol) {
+
+        List<PhraseModel> phraseList = isPredictionMode
+                ? gdh.readPrediction(symbol, 0)
+                : gdh.readFollower(followerText);
+        GalaxyPredictAdapter gpa = new GalaxyPredictAdapter(phraseList);
+        predictListView.setAdapter(gpa);
+        GalaxyPredictAdapter.setOnItemClickListener(new GalaxyPredictAdapter.ClickListener() {
+            @Override
+            public void onItemClick(int position, View v) {
+                PhraseModel item = phraseList.get(position);
+                if (isPredictionMode)
+                    gdh.increasePredictionFrequency(item.getMId());
+                else
+                    gdh.increaseFollowerFrequency(item.getMId());
+                String selText = ((TextView)v.findViewById(R.id.wordText)).getText().toString();
+                followerText = selText.charAt(selText.length() - 1) + "";
+                curText = selText;
+                isPredictionMode = false;
+                doGalaxyOperation();
+                submitInUnicode();
+            }
+
+            @Override
+            public void onItemLongClick(int position, View v) {
+
             }
         });
     }
