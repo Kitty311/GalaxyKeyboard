@@ -10,7 +10,8 @@ import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import com.galaxy.keyboard.R
-import com.galaxy.keyboard.input.GalaxyKeyboardService
+import java.text.SimpleDateFormat
+import java.util.*
 
 class GalaxyAppHelper {
     companion object {
@@ -174,6 +175,17 @@ class GalaxyAppHelper {
         fun Context.GalaxyToast(stringId: Int) =
             Toast.makeText(this, resources.getText(stringId), Toast.LENGTH_SHORT).show()
 
+        fun CheckIfLicenseAvailable(): Boolean {
+            val curDate = Calendar.getInstance()
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+            var formattedDate: String = dateFormat.format(curDate.getTime())
+            Log.e("XianZai", formattedDate)
+            val expireDate = Calendar.getInstance()
+            expireDate.set(2023, 10, 1)
+            formattedDate = dateFormat.format(expireDate.getTime())
+            Log.e("Trial", formattedDate)
+            return curDate.before(expireDate)
+    }
         fun CheckNetworkState(context: Context): Boolean {
             val connectivityManager =
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

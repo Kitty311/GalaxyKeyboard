@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.galaxy.keyboard.R;
+import com.galaxy.keyboard.helper.GalaxyAppHelper;
 import com.galaxy.keyboard.helper.GalaxyDatabaseHelper;
 import com.galaxy.keyboard.model.PhraseModel;
 import com.galaxy.keyboard.widget.GalaxySettingDialog;
@@ -53,7 +54,7 @@ public class GalaxyKeyboardView extends KeyboardView {
     
     @Override
     public void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+            super.onDraw(canvas);
 
 //        List<Keyboard.Key> keys = getKeyboard().getKeys();
 //        for (Keyboard.Key key : keys) {

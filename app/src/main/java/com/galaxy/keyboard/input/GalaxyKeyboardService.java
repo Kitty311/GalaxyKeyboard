@@ -1,5 +1,6 @@
 package com.galaxy.keyboard.input;
 
+import android.app.Activity;
 import android.content.Context;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
@@ -10,7 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -64,7 +67,12 @@ public class GalaxyKeyboardService extends InputMethodService
 
     @Override
     public boolean onShowInputRequested(int flags, boolean configChange) {
-        return super.onShowInputRequested(flags, configChange);
+        if (GalaxyAppHelper.Companion.CheckIfLicenseAvailable()) {
+            return super.onShowInputRequested(flags, configChange);
+        } else {
+            Toast.makeText(context, "Trial is expired\nPlease purchase premium version", Toast.LENGTH_SHORT).show();
+        }
+        return false;
     }
 
     @Override
@@ -482,6 +490,10 @@ public class GalaxyKeyboardService extends InputMethodService
     @Override
     public View onCreateInputView() {
         Log.e("___Galaxy Keyboard___", "CREATED");
+        if (!GalaxyAppHelper.Companion.CheckIfLicenseAvailable()) {
+            Toast.makeText(context, "Trial is expired\nPlease purchase premium version", Toast.LENGTH_SHORT).show();
+            return null;
+        }
         View galaxyView = getLayoutInflater().inflate(R.layout.galaxy_keyboard, null);
         predictListView = galaxyView.findViewById(R.id.predictListView);
         GalaxyFbLayoutManager layoutManager = new GalaxyFbLayoutManager(context);
