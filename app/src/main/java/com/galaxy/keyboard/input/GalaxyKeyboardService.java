@@ -1,10 +1,12 @@
 package com.galaxy.keyboard.input;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,10 +31,14 @@ import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.JustifyContent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GalaxyKeyboardService extends InputMethodService
         implements KeyboardView.OnKeyboardActionListener {
+
+    private static final int PREDICTION_FIRST_DISPLAY_COUNT = 100;
+    private static final int PREDICTION_LOAD_MORE_COUNT = 100;
 
     private GalaxyKeyboardView kv;
     private Keyboard keyboard;
@@ -280,6 +287,10 @@ public class GalaxyKeyboardService extends InputMethodService
         predictListView.setAdapter(null);
     }
 
+    private boolean isLoading = false;
+    private List<PhraseModel> phraseList = new ArrayList<>(), totalList = new ArrayList<>();
+    private GalaxyPredictAdapter gpa;
+
     private void doGalaxyOperation() {
 
         if (isPredictionMode) {
@@ -290,11 +301,25 @@ public class GalaxyKeyboardService extends InputMethodService
             userTextBox.setText(curUserText);
         }
 
-        List<PhraseModel> phraseList = isPredictionMode
+        totalList = isPredictionMode
                 ? gdh.readPrediction(curText, 0)
                 : gdh.readFollower(followerText);
-        GalaxyPredictAdapter gpa = new GalaxyPredictAdapter(phraseList);
+        phraseList = PREDICTION_FIRST_DISPLAY_COUNT > totalList.size() ? totalList : totalList.subList(0, PREDICTION_FIRST_DISPLAY_COUNT);
+        gpa = new GalaxyPredictAdapter(phraseList);
         predictListView.setAdapter(gpa);
+        predictListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                GalaxyFbLayoutManager gflm = (GalaxyFbLayoutManager)recyclerView.getLayoutManager();
+                if (!isLoading) {
+                    if (gflm != null && gflm.findLastCompletelyVisibleItemPosition() == phraseList.size() - 1) {
+                        loadMoreData();
+                        isLoading = true;
+                    }
+                }
+            }
+        });
         GalaxyPredictAdapter.setOnItemClickListener(new GalaxyPredictAdapter.ClickListener() {
             @Override
             public void onItemClick(int position, View v) {
@@ -320,8 +345,9 @@ public class GalaxyKeyboardService extends InputMethodService
 
     private void doKagayaOperation() {
 
-        List<PhraseModel> phraseList = gdh.readPrediction(curText, 1);
-        GalaxyPredictAdapter gpa = new GalaxyPredictAdapter(phraseList);
+        totalList = gdh.readPrediction(curText, 1);
+        phraseList = PREDICTION_FIRST_DISPLAY_COUNT > totalList.size() ? totalList : totalList.subList(0, PREDICTION_FIRST_DISPLAY_COUNT);
+        gpa = new GalaxyPredictAdapter(phraseList);
         predictListView.setAdapter(gpa);
         GalaxyPredictAdapter.setOnItemClickListener(new GalaxyPredictAdapter.ClickListener() {
             @Override
@@ -340,10 +366,11 @@ public class GalaxyKeyboardService extends InputMethodService
 
     private void doKittyOperation(String symbol) {
 
-        List<PhraseModel> phraseList = isPredictionMode
+        totalList = isPredictionMode
                 ? gdh.readPrediction(symbol, 0)
                 : gdh.readFollower(followerText);
-        GalaxyPredictAdapter gpa = new GalaxyPredictAdapter(phraseList);
+        phraseList = PREDICTION_FIRST_DISPLAY_COUNT > totalList.size() ? totalList : totalList.subList(0, PREDICTION_FIRST_DISPLAY_COUNT);
+        gpa = new GalaxyPredictAdapter(phraseList);
         predictListView.setAdapter(gpa);
         GalaxyPredictAdapter.setOnItemClickListener(new GalaxyPredictAdapter.ClickListener() {
             @Override
@@ -368,8 +395,30 @@ public class GalaxyKeyboardService extends InputMethodService
         });
     }
 
+    public void loadMoreData() {
+        phraseList.add(null);
+        gpa.notifyItemInserted(phraseList.size() - 1);
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                int scrollPosition = phraseList.size();
+
+                for (int i = scrollPosition; i < scrollPosition + 10; i ++) {
+                    phraseList.add(totalList.get(i));
+                }
+
+                predictListView.setAdapter(new GalaxyPredictAdapter(phraseList));
+                isLoading = false;
+            }
+        }, 500);
+    }
+
     // This is adapter that shows prediction words
-    public static class GalaxyPredictAdapter extends RecyclerView.Adapter<GalaxyPredictAdapter.GalaxyViewHolder> {
+    public static class GalaxyPredictAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+        private final int VIEW_TYPE_ITEM = 0;
+        private final int VIEW_TYPE_LOADING = 1;
 
         private static ClickListener clickListener;
         private static List<PhraseModel> mList;
@@ -380,25 +429,49 @@ public class GalaxyKeyboardService extends InputMethodService
 
         @NonNull
         @Override
-        public GalaxyPredictAdapter.GalaxyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(context).inflate(R.layout.item_prediction, null);
-            GalaxyViewHolder viewHolder = new GalaxyViewHolder(view);
-            return viewHolder;
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            if (viewType == VIEW_TYPE_ITEM) {
+                View view = LayoutInflater.from(context).inflate(R.layout.item_prediction, null);
+                return new GalaxyViewHolder(view);
+            } else {
+                View view = LayoutInflater.from(context).inflate(R.layout.item_loading, null);
+                return new LoadingViewHolder(view);
+            }
+
         }
 
         @Override
-        public void onBindViewHolder(@NonNull GalaxyPredictAdapter.GalaxyViewHolder holder, int position) {
-            holder.setWordText(mList.get(position).getMPredict());
-            holder.setNumText((mList.size() - position) + "");
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            if (holder instanceof GalaxyViewHolder) {
+                ((GalaxyViewHolder) holder).setWordText(mList.get(position).getMPredict());
+                ((GalaxyViewHolder) holder).setNumText((mList.size() - position) + "");
+            } else if (holder instanceof LoadingViewHolder) {
+                showLoadingView((LoadingViewHolder) holder, position);
+            }
+        }
+
+        private void showLoadingView(LoadingViewHolder viewHolder, int position) {
+            //ProgressBar would be displayed
+            Log.e("Progressbar showing", "Yes");
         }
 
         @Override
         public int getItemCount() {
-            return mList.size();
+            return mList == null ? 0 : mList.size();
         }
 
         public static void setOnItemClickListener(ClickListener clickListener) {
             GalaxyPredictAdapter.clickListener = clickListener;
+        }
+
+        private static class LoadingViewHolder extends RecyclerView.ViewHolder {
+
+            ProgressBar progressBar;
+
+            public LoadingViewHolder(@NonNull View itemView) {
+                super(itemView);
+                progressBar = itemView.findViewById(R.id.progressBar);
+            }
         }
 
         // If you wanna change prediction word style, work here
