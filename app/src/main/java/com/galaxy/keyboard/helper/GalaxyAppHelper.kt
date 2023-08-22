@@ -181,7 +181,7 @@ class GalaxyAppHelper {
             var formattedDate: String = dateFormat.format(curDate.getTime())
             Log.e("XianZai", formattedDate)
             val expireDate = Calendar.getInstance()
-            expireDate.set(2023, 10, 1)
+            expireDate.set(2024, 1, 1)
             formattedDate = dateFormat.format(expireDate.getTime())
             Log.e("Trial", formattedDate)
             return curDate.before(expireDate)
