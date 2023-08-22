@@ -15,7 +15,7 @@
         <Key android1:codes="55" android1:keyIcon="@drawable/c07"/>
         <Key android1:codes="56" android1:keyIcon="@drawable/c08"/>
         <Key android1:codes="57" android1:keyIcon="@drawable/c09"/>
-        <Key android1:codes="58" android1:keyIcon="@drawable/c10" android1:keyEdgeFlags="right"/>
+        <Key android1:codes="48" android1:keyIcon="@drawable/c10" android1:keyEdgeFlags="right"/>
     </Row>
     <Row>
         <Key android1:codes="113" android1:keyIcon="@drawable/c11" android1:keyEdgeFlags="left"/>
