@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#00000000</color>
+    <color name="primaryColor">#6200ED</color>
+    <color name="darkColor">#373737</color>
+    <color name="greyColor">#E0E0E0</color>
+
+    <color name="shadowColor">#D51212</color>
+    <color name="keyPreviewBorderColor">#FDD835</color>
+    <color name="keyPreviewBGColor">#FB8C00</color>
+    <color name="keyPreviewTextColor">#00897B</color>
+    <color name="textFieldBorderColor">#009688</color>
+    <color name="feedbackInputBorderColor">#5E35B1</color>
+    <color name="predictViewBGColor">#EDC73D</color>
+
+    <color name="predictTextColor">#202020</color>
+    <color name="predictNumColor">#0040FF</color>
+    <color name="predictWordDividerColor">#616161</color>
+
+    <color name="enableButtonColor">#0D47A1</color>
+    <color name="switchButtonColor">#B71C1C</color>
+    <color name="loginButtonColor">#E65100</color>
+    <color name="logoutButtonColor">#33691E</color>
+    <color name="settingButtonColor">#4A148C</color>
+
+    <color name="colorRed">#D81B60</color>
+    <color name="colorRed0">#00D81B60</color>
+    <color name="colorRed25">#40D81B60</color>
+    <color name="colorRed50">#80D81B60</color>
+    <color name="colorRed75">#C0D81B60</color>
+    <color name="colorBlue">#1E88E5</color>
+    <color name="colorBlue0">#001E88E5</color>
+    <color name="colorBlue25">#401E88E5</color>
+    <color name="colorBlue50">#801E88E5</color>
+    <color name="colorBlue75">#C01E88E5</color>
+    <color name="colorOrange">#FB8C00</color>
+    <color name="colorOrange0">#00FB8C00</color>
+    <color name="colorOrange25">#40FB8C00</color>
+    <color name="colorOrange50">#80FB8C00</color>
+    <color name="colorOrange75">#C0FB8C00</color>
+    <color name="colorGreen">#43A047</color>
+    <color name="colorGreen0">#0043A047</color>
+    <color name="colorGreen25">#4043A047</color>
+    <color name="colorGreen50">#8043A047</color>
+    <color name="colorGreen75">#C043A047</color>
+    <color name="colorPurple">#8E24AA</color>
+    <color name="colorPurple0">#008E24AA</color>
+    <color name="colorPurple25">#408E24AA</color>
+    <color name="colorPurple50">#808E24AA</color>
+    <color name="colorPurple75">#C08E24AA</color>
+    <color name="colorBlack">#000000</color>
+    <color name="colorBlack0">#00000000</color>
+    <color name="colorBlack25">#40000000</color>
+    <color name="colorBlack50">#80000000</color>
+    <color name="colorBlack75">#C0000000</color>
+</resources>

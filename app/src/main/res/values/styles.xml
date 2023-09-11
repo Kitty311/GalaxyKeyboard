@@ -1,0 +1,22 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
+        <!-- Customize your theme here. -->
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
+    <style name="GalaxyMemoryDialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog">
+
+    </style>
+
+    <style name="GalaxyFeedbackDialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog">
+
+    </style>
+
+    <style name="GalaxySettingDialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog">
+
+    </style>
+
+</resources>

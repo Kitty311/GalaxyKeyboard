@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="gap_tiny">3dp</dimen>
+    <dimen name="gap_small">5dp</dimen>
+    <dimen name="gap_normal">10dp</dimen>
+    <dimen name="gap_recommend">16dp</dimen>
+    <dimen name="gap_big">20dp</dimen>
+    <dimen name="font_size_small">12sp</dimen>
+    <dimen name="font_size_normal">14sp</dimen>
+    <dimen name="font_size_big">17sp</dimen>
+    <dimen name="app_text_size_small">14sp</dimen>
+    <dimen name="app_text_size_normal">15sp</dimen>
+    <dimen name="app_text_size_big">22sp</dimen>
+    <dimen name="dropdown_item_padding">14dp</dimen>
+    <dimen name="button_normal">100dp</dimen>
+    <dimen name="button_big">220dp</dimen>
+    <dimen name="button_text_normal">14sp</dimen>
+    <dimen name="button_text_big">18sp</dimen>
+    <dimen name="stroke_normal">2dp</dimen>
+    <dimen name="stroke_small">1dp</dimen>
+    <dimen name="stroke_big">5dp</dimen>
+    <dimen name="popup_keypad_height">24dp</dimen>
+    <dimen name="preview_text_height">40dp</dimen>
+    <dimen name="predict_part_height">150dp</dimen>
+</resources>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Keyboard
+    xmlns:android1="http://schemas.android.com/apk/res/android"
+    android1:horizontalGap="0px"
+    android1:keyHeight="6%p"
+    android1:keyWidth="10%p"
+    android1:verticalGap="0px">
+    <Row>
+        <Key android1:codes="4161" android1:keyIcon="@drawable/b01" android1:keyEdgeFlags="left"/>
+        <Key android1:codes="4162" android1:keyIcon="@drawable/b02"/>
+        <Key android1:codes="4163" android1:keyIcon="@drawable/b03"/>
+        <Key android1:codes="4164" android1:keyIcon="@drawable/b04"/>
+        <Key android1:codes="4165" android1:keyIcon="@drawable/b05"/>
+        <Key android1:codes="4166" android1:keyIcon="@drawable/b06"/>
+        <Key android1:codes="4167" android1:keyIcon="@drawable/b07"/>
+        <Key android1:codes="4168" android1:keyIcon="@drawable/b08"/>
+        <Key android1:codes="4169" android1:keyIcon="@drawable/b09"/>
+        <Key android1:codes="4160" android1:keyIcon="@drawable/b10" android1:keyEdgeFlags="right"/>
+    </Row>
+    <Row>
+        <Key android1:codes="193" android1:keyIcon="@drawable/b11" android1:keyEdgeFlags="left"/>
+        <Key android1:codes="194" android1:keyIcon="@drawable/b12"/>
+        <Key android1:codes="195" android1:keyIcon="@drawable/b13"/>
+        <Key android1:codes="196" android1:keyIcon="@drawable/b14"/>
+        <Key android1:codes="197" android1:keyIcon="@drawable/b15"/>
+        <Key android1:codes="198" android1:keyIcon="@drawable/b16"/>
+        <Key android1:codes="199" android1:keyIcon="@drawable/b17"/>
+        <Key android1:codes="200" android1:keyIcon="@drawable/b18"/>
+        <Key android1:codes="201" android1:keyIcon="@drawable/b19"/>
+        <Key android1:codes="202" android1:keyIcon="@drawable/b20" android1:keyEdgeFlags="right"/>
+    </Row>
+    <Row>
+        <Key android1:codes="203" android1:keyIcon="@drawable/b21" android1:keyEdgeFlags="left"/>
+        <Key android1:codes="204" android1:keyIcon="@drawable/b22"/>
+        <Key android1:codes="205" android1:keyIcon="@drawable/b23"/>
+        <Key android1:codes="206" android1:keyIcon="@drawable/b24"/>
+        <Key android1:codes="207" android1:keyIcon="@drawable/b25"/>
+        <Key android1:codes="208" android1:keyIcon="@drawable/b26"/>
+        <Key android1:codes="209" android1:keyIcon="@drawable/b27"/>
+        <Key android1:codes="210" android1:keyIcon="@drawable/b28"/>
+        <Key android1:codes="211" android1:keyIcon="@drawable/b29"/>
+        <Key android1:codes="212" android1:keyIcon="@drawable/b30" android1:keyEdgeFlags="right"/>
+    </Row>
+    <Row>
+        <Key android1:codes="213" android1:keyIcon="@drawable/b31" android1:keyEdgeFlags="left"/>
+        <Key android1:codes="214" android1:keyIcon="@drawable/b32"/>
+        <Key android1:codes="215" android1:keyIcon="@drawable/b33"/>
+        <Key android1:codes="216" android1:keyIcon="@drawable/b34"/>
+        <Key android1:codes="217" android1:keyIcon="@drawable/b35"/>
+        <Key android1:codes="218" android1:keyIcon="@drawable/b36"/>
+        <Key android1:codes="219" android1:keyIcon="@drawable/b37"/>
+        <Key android1:codes="220" android1:keyIcon="@drawable/b38"/>
+        <Key android1:codes="221" android1:keyIcon="@drawable/b39"/>
+        <Key
+            android1:codes="-5"
+            android1:isRepeatable="true"
+            android1:keyEdgeFlags="right"
+            android1:keyIcon="@drawable/abcd40"/>
+    </Row>
+    <Row android1:rowEdgeFlags="bottom">
+        <Key
+            android1:codes="-104"
+            android1:keyEdgeFlags="left"
+            android1:keyIcon="@drawable/b41"/>
+        <Key
+            android1:codes="-99"
+            android1:keyIcon="@drawable/ab42"/>
+        <Key
+            android1:codes="-100"
+            android1:keyIcon="@drawable/abcd43_standard"/>
+        <Key
+            android1:codes="-101"
+            android1:keyIcon="@drawable/abcd44"/>
+        <Key
+            android1:codes="-102"
+            android1:keyIcon="@drawable/abcd45"/>
+        <Key
+            android1:codes="32"
+            android1:isRepeatable="true"
+            android1:keyIcon="@drawable/abcd46"/>
+        <Key android1:codes="224" android1:keyIcon="@drawable/b47"/>
+        <Key android1:codes="223" android1:keyIcon="@drawable/b48"/>
+        <Key android1:codes="222" android1:keyIcon="@drawable/b49"/>
+        <Key
+            android1:codes="-4"
+            android1:keyEdgeFlags="right"
+            android1:keyIcon="@drawable/abcd50"/>
+    </Row>
+</Keyboard>
