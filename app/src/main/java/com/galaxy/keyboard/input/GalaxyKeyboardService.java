@@ -233,7 +233,7 @@ public class GalaxyKeyboardService extends InputMethodService
                 } else if (curKeypadMode == KEYPAD_MODE.ENGLISH_BACK_KEY_PAD || curKeypadMode == KEYPAD_MODE.ENGLISH_FRONT_KEY_PAD || isBurmeseNumber) {
                     ic.commitText(code + "", 0);
                     return;
-                } else if (isPredictionMode && gdh.readPrediction(curText + code, 0).size() == 0) return;
+                } /* Sep 11 */else if (isPredictionMode && gdh.readPrediction(curText + code, 0).size() == 0) return;
                 curText += code;
                 doGalaxyOperation();
         }
